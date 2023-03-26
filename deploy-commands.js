@@ -3,6 +3,9 @@ const { clientId, guildId, token } = require("./config.json");
 const fs = require("node:fs");
 const path = require("node:path");
 
+// doğru server'e deploy edilmesi için guildId'yi değiştirin
+// guildId config.json içerisinde mevcut.
+
 const commands = [];
 // Grab all the command files from the commands directory you created earlier
 const commandsPath = path.join(__dirname, "commands");
