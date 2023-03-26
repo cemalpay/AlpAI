@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 
+// basic ping command
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("ping")
