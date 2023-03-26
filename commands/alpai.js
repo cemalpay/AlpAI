@@ -17,23 +17,41 @@ const SYSTEM_PROMPT = [
   },
 ];
 
+async function createChatCompletion(message, options = {}) {
+  try {
+    const response = await openai.post("/chat/completions", {
+      model: options.model || "gpt-3.5-turbo",
+      prompt: message,
+      max_tokens: options.max_tokens || 100,
+      temperature: options.temperature || 0.5,
+      top_p: options.top_p || 1,
+      frequency_penalty: options.frequency_penalty || 0,
+      presence_penalty: options.presence_penalty || 0,
+      stop: options.stop || ["\n"],
+    });
+    return response.data.choices[0].text;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("alpai")
-    .setDescription("Talk to AlpAI"),
+    .setDescription("Talk to AlpAI")
+    .addStringOption((option) =>
+      option
+        .setName("message")
+        .setDescription("Message to send to AlpAI")
+        .setRequired(true)
+    ),
   async execute(interaction) {
-    const prompt = interaction.options.getString("prompt");
-    const response = await openai.post("/engines/davinci/completions", {
-      prompt: SYSTEM_PROMPT.concat(prompt).join("\n"),
-      max_tokens: 100,
-      temperature: 0.7,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-      stop: ["*"],
-    });
-    await interaction.reply(response.data.choices[0].text);
+    const message = interaction.options.getString("message");
+    const response = await createChatCompletion(
+      SYSTEM_PROMPT.concat(message).join("\n")
+    );
+    await interaction.reply(response);
   },
 };
 
-// Path: commands\alpai.js
+// Path: commands\index.js
