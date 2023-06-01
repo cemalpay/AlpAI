@@ -1,5 +1,3 @@
-// create new command named ask with using chatgpt api from config.json
-
 const axios = require("axios");
 const { SlashCommandBuilder } = require("@discordjs/builders");
 
@@ -13,7 +11,6 @@ const openai = axios.create({
   },
 });
 
-// take the question from discord and send it to openai api and return the answer to discord
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("ask")
@@ -26,21 +23,39 @@ module.exports = {
     ),
   async execute(interaction) {
     const question = interaction.options.getString("question");
-    const answer = await ask(question);
-    await interaction.reply(answer);
+    try {
+      const answer = await ask(question);
+      await interaction.reply(answer);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply(
+        "Sorry, I was unable to process your question. Please try again later."
+      );
+    }
   },
 };
 
 async function ask(question) {
-  const prompt = `Q: ${question}\nA:`;
+  const prompt = `I am AlpAI, a technical support assistant at CAT Limited. I specialize in computer-related technical questions.\nQ: ${question}\nA:`;
   const { data } = await openai.post("/engines/davinci/completions", {
     prompt,
-    max_tokens: 50,
-    temperature: 0.7,
+    max_tokens: 150,
+    temperature: 0.2,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
     stop: ["\n"],
   });
-  return data.choices[0].text;
+  const answer = data.choices[0].text.trim();
+
+  // Check if the answer is outside of AlpAI's area of expertise
+  if (
+    answer.includes("I don't know") ||
+    answer.includes("I am not sure") ||
+    answer.includes("I can't answer")
+  ) {
+    return "Bilmiyorum, patron bu konu hakkında fikrin var mı? @Cem Alpay";
+  }
+
+  return answer;
 }
